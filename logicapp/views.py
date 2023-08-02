@@ -1375,106 +1375,110 @@ class Sales_Analysis(View):
         employees = Profile.objects.filter(enterprise=enterprise)
 
         list_quantity = []
-        for sale in sales_p:
-            print(sale.quantity)
-            list_sale = []
-            sale.quantity = str(sale.quantity)
-            sale.quantity = sale.quantity.replace('{', '')
-            sale.quantity = sale.quantity.replace('}', '')
-            sale.quantity = sale.quantity.replace("'", '')
-            sale.quantity = sale.quantity.replace(' ', '')
-            sale.quantity = sale.quantity.strip()
-            sale.quantity = sale.quantity.split(',')
-            print(sale.quantity)
-            for c, i in enumerate(sale.quantity):
-                sale.quantity[c] = i.split(':')
-            print(sale.quantity)
-            for id, quantity in sale.quantity:
-                print(id, '-----', quantity)
-                product_quantity = {}
-                id = int(float(id))
-                quantity = int(quantity)
-                product_quantity['sale'] = sale
-                product_quantity['product'] = Product.objects.get(id=id)
-                product_quantity['quantity'] = quantity
-                list_sale.append(product_quantity.copy())
-            list_quantity.append(list_sale.copy())
-            list_sale.clear()
-
-
-        product_sales = {}
-        employee_sales = {}
-        for product in products:
-            product_sales[f'{product.name}'] = 0
-
-        for employee in employees:
-            if employee.area.add_sales:
-                employee_sales[f'{employee.name}'] = 0
-
-        for sale in sales:
-            for employee in employees:
-                if employee.name == sale.profile.name and employee.area.add_sales:
-                    employee_sales[f'{employee.name}'] += 1
-
-        for sale in sales:
-            for c in list_quantity:
-                for i in c:
-                    if i['sale'] == sale:
-                        for product in products:
-                            if i['product'] == product:
-                                product_sales[f'{product.name}'] += i['quantity']
-        employee_sales = sorted(employee_sales.items(), key=lambda x:x[1], reverse=True)
-        employee_sales = dict(employee_sales)
-
-        product_sales = sorted(product_sales.items(),  key=lambda x:x[1], reverse=True)
-        product_sales = dict(product_sales)
-
-        products_total = {}
-        employee_total = {}
-
-        for p, c in product_sales.items():
+        if sales:
+            for sale in sales_p:
+                print(sale.quantity)
+                list_sale = []
+                sale.quantity = str(sale.quantity)
+                sale.quantity = sale.quantity.replace('{', '')
+                sale.quantity = sale.quantity.replace('}', '')
+                sale.quantity = sale.quantity.replace("'", '')
+                sale.quantity = sale.quantity.replace(' ', '')
+                sale.quantity = sale.quantity.strip()
+                sale.quantity = sale.quantity.split(',')
+                print(sale.quantity)
+                for c, i in enumerate(sale.quantity):
+                    sale.quantity[c] = i.split(':')
+                print(sale.quantity)
+                for id, quantity in sale.quantity:
+                    print(id, '-----', quantity)
+                    product_quantity = {}
+                    id = int(float(id))
+                    quantity = int(quantity)
+                    product_quantity['sale'] = sale
+                    product_quantity['product'] = Product.objects.get(id=id)
+                    product_quantity['quantity'] = quantity
+                    list_sale.append(product_quantity.copy())
+                list_quantity.append(list_sale.copy())
+                list_sale.clear()
+    
+    
+            product_sales = {}
+            employee_sales = {}
             for product in products:
-                if p == product.name:
-                    products_total[f'{product.name}'] = c * float(product.price)
-
-        for p, c in employee_sales.items():
-            employee_total[f'{p}'] = 0
-
-        for p, c in employee_sales.items():
+                product_sales[f'{product.name}'] = 0
+    
+            for employee in employees:
+                if employee.area.add_sales:
+                    employee_sales[f'{employee.name}'] = 0
+    
             for sale in sales:
-                if p == sale.profile.name:
-                    employee_total[f'{sale.profile.name}'] += sale.total
-
-
-        product_list = list(product_sales.keys())
-
-        employee_list = list(employee_sales.keys())
-
-        employee_more_sale = employee_list[0]
-        employee_less_sale = employee_list[-1]
-        product_less_sold = product_list[-1]
-        product_most_sold = product_list[0]
-
-
-        form = SaleDate()
-
-        context = {
-            'profile': profile,
-            'enterprise': enterprise,
-            'sales': sales,
-            'products': products,
-            'product_sales': product_sales,
-            'employee_sales': employee_sales,
-            'most_sold': product_most_sold,
-            'less_sold': product_less_sold,
-            'more_sales': employee_more_sale,
-            'less_sales': employee_less_sale,
-            'employee_total': employee_total,
-            'products_total': products_total,
-            'form': form,
-            'list_quantity': list_quantity,
-        }
-        return render(request, 'Sales_Analysis.html', context)
+                for employee in employees:
+                    if employee.name == sale.profile.name and employee.area.add_sales:
+                        employee_sales[f'{employee.name}'] += 1
+    
+            for sale in sales:
+                for c in list_quantity:
+                    for i in c:
+                        if i['sale'] == sale:
+                            for product in products:
+                                if i['product'] == product:
+                                    product_sales[f'{product.name}'] += i['quantity']
+            employee_sales = sorted(employee_sales.items(), key=lambda x:x[1], reverse=True)
+            employee_sales = dict(employee_sales)
+    
+            product_sales = sorted(product_sales.items(),  key=lambda x:x[1], reverse=True)
+            product_sales = dict(product_sales)
+    
+            products_total = {}
+            employee_total = {}
+    
+            for p, c in product_sales.items():
+                for product in products:
+                    if p == product.name:
+                        products_total[f'{product.name}'] = c * float(product.price)
+    
+            for p, c in employee_sales.items():
+                employee_total[f'{p}'] = 0
+    
+            for p, c in employee_sales.items():
+                for sale in sales:
+                    if p == sale.profile.name:
+                        employee_total[f'{sale.profile.name}'] += sale.total
+    
+    
+            product_list = list(product_sales.keys())
+    
+            employee_list = list(employee_sales.keys())
+    
+            employee_more_sale = employee_list[0]
+            employee_less_sale = employee_list[-1]
+            product_less_sold = product_list[-1]
+            product_most_sold = product_list[0]
+    
+    
+            form = SaleDate()
+    
+            context = {
+                'profile': profile,
+                'enterprise': enterprise,
+                'sales': sales,
+                'products': products,
+                'product_sales': product_sales,
+                'employee_sales': employee_sales,
+                'most_sold': product_most_sold,
+                'less_sold': product_less_sold,
+                'more_sales': employee_more_sale,
+                'less_sales': employee_less_sale,
+                'employee_total': employee_total,
+                'products_total': products_total,
+                'form': form,
+                'list_quantity': list_quantity,
+            }
+            return render(request, 'Sales_Analysis.html', context)
+        else:
+            return redirect('logicapp:SalesAnalysisMonth', profile_id=profile_id, enterprise_id=enterprise.uuid,
+                                data_initial=data_initial, data_final=data_final)
 
     def post(self, request, profile_id, enterprise_id, *args, **kwargs):
         profile = Profile.objects.get(uuid=profile_id)
