@@ -1477,8 +1477,7 @@ class Sales_Analysis(View):
             }
             return render(request, 'Sales_Analysis.html', context)
         else:
-            return redirect('logicapp:SalesAnalysisMonth', profile_id=profile_id, enterprise_id=enterprise.uuid,
-                                data_initial=data_initial, data_final=data_final)
+            return redirect('logicapp:SalesAnalysis', profile_id=profile_id, enterprise_id=enterprise.uuid)
 
     def post(self, request, profile_id, enterprise_id, *args, **kwargs):
         profile = Profile.objects.get(uuid=profile_id)
